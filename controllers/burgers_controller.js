@@ -1,41 +1,80 @@
-var express = require("express");
+// require model
+var db = require('../models');
+var Burger = db.Burger;
 
-var router = express.Router();
-var burger = require("../models/burger");
+// export the routes
+module.exports = function(app) {
+    // get the root route
+    app.get('/', function(request, response) {
+        var object = {};
+        Burger.findAll({
+            where: {
+                devoured: false
+            }
+        }).then(function(result) {
+            object.uneatenBurgers = result;
+            return;
+        }).then(function() {
+          return Burger.findAll({
+              where: {
+                  devoured: true
+              }
+          });
+        }).then(function(result) {
+            object.eatenBurgers = result;
+            return;
+        }).then(function() {
+            response.render('index', {
+                uneatenBurgers: object.uneatenBurgers,
+                eatenBurgers: object.eatenBurgers
+            }); 
+        });
+    });
 
-// get route -> index
-router.get("/", function(req, res) {
-  res.redirect("/burgers");
-});
+    // define the get api/burgers route - for all burger data
+    app.get('/api/burgers', function(request, response) {
+        Burger.findAll({}).then(function(result) {
+            response.json(result);
+        });
+    });
 
-router.get("/burgers", function(req, res) {
-  // express callback response by calling burger.selectAllBurger
-  burger.all(function(data) {
-    // Wrapping the array of returned burgers in a object so it can be referenced inside our handlebars
-    var hbsObject = { burgers: data };
-    res.render("index", hbsObject);
-  });
-});
+    // define post for creating a burger
+    app.post('/', function(request, response) {
+        var newBurger = request.body.burger;
+        // if no burger is defined just return
+        if (newBurger === '') {
+            response.redirect('/');
+            return;
+        }
+        // create that burger
+        Burger.create({
+            burger_name: newBurger
+        }).then(function() {
+            response.redirect('/');
+        });
+    });
 
-// post route -> back to index
-router.post("/burgers/create", function(req, res) {
-  // takes the request object using it as input for buger.addBurger
-  burger.create(req.body.burger_name, function(result) {
-    // wrapper for orm.js that using MySQL insert callback will return a log to console,
-    // render back to index with handle
-    console.log(result);
-    res.redirect("/");
-  });
-});
+    // define the get api/burgers/:id route - for single burger data
+    app.get('/api/burgers/:id', function(request, response) {
+        Burger.findOne({
+            where: {
+                id: request.params.id
+            }
+        }).then(function(data) {
+            response.json(data);
+        });
+    });
 
-// put route -> back to index
-router.put("/burgers/update", function(req, res) {
-  burger.update(req.body.burger_id, function(result) {
-    // wrapper for orm.js that using MySQL update callback will return a log to console,
-    // render back to index with handle
-    console.log(result);
-    res.redirect("/");
-  });
-});
-
-module.exports = router;
+    // define put for updating a burger
+    app.put('/:id', function(request, response) {
+        Burger.update({
+            devoured: true
+        }, {
+            where: {
+                id: request.params.id
+            }
+        }).then(function() {
+            response.redirect('/');
+        });
+    });
+};

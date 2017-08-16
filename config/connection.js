@@ -1,4 +1,7 @@
+//Requiring dependencies
 var mysql = require("mysql");
+
+var port = 3000;
 
 var connection;
 
