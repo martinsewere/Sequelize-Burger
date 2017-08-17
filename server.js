@@ -7,11 +7,11 @@ var db = require('./models');
 
 // set up server
 var app = express();
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 8080;
 // app.listen(port);
 
 
-db.sequelize.sync().then(function(){
+db.sequelize.sync({force: true}).then(function(){
 	app.listen(port, function() {
 		console.log("listening on port %", port);
 	});

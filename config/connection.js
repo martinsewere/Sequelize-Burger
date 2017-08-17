@@ -1,7 +1,7 @@
 //Requiring dependencies
 var mysql = require("mysql");
 
-var port = 3000;
+var port = 3306;
 
 var connection;
 
@@ -12,7 +12,7 @@ if (process.env.JAWSDB_URL) {
 		host: "localhost",
 		user: "root",
 		password: "",
-		database: "burger_db"
+		database: "burgers_db"
 	});
 };
 
